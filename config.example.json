@@ -1,0 +1,13 @@
+{
+  "prefix": "!",
+  "token": "TOKEN",
+  "mysql": {
+    "user": "admin",
+    "password": "pass123",
+    "host": "localhost",
+    "database": "test",
+    "tables": {
+      "level": "levels"
+    }
+  }
+}
