@@ -1,4 +1,3 @@
-const {VoiceState} = require("discord.js");
 const ytdl = require('ytdl-core');
 
 const using = new Set();
@@ -51,25 +50,25 @@ module.exports = {
 
         const joining = await message.reply("Playing...");
 
-        message.member.voice.channel.join().catch(console.error).then(async connection => {
+        message.member.voice.channel.join().then((connection) => {
+
             client.players.set(message.guild.id, {connection: connection, queue: []});
+
             using.delete(message.author.id);
+
             this.play(client.players, message, url).then(() => {
-                joining.edit({content: `${message.author}, Playing ` + url}).catch(console.error);
+                joining.edit({content: `${message.author}, playing ` + url}).catch(console.error);
             }).catch(console.error);
-        });
+
+        }).catch(console.error);
     },
 
     async play(players, message, url) {
 
         const doc = players.get(message.guild.id);
 
-        doc.connection.play(ytdl(url)).once("finish", async (value) => {
-            if (value) return;
-            if (players.get(message.guild.id).connection.voice === VoiceState.DISCONNECTED) {
-                players.delete(message.guild.id);
-                return;
-            }
+        doc.connection.play(ytdl(url)).once("finish", async () => {
+
             if (doc.queue.length === 0) {
                 players.delete(message.guild.id);
                 message.reply("The queue is empty. Leaving the voice channel.").catch(console.error);
@@ -85,6 +84,8 @@ module.exports = {
 
             players.set(message.guild.id, doc);
 
+        }).once("close", () => {
+            players.delete(message.guild.id);
         });
 
     }
