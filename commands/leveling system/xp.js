@@ -1,16 +1,23 @@
+const utils = require("../../utils");
 const { tables } = require("./../../config.json").mysql;
 
 module.exports = {
     name: "xp",
     async execute(client, message, args) {
+
         if (args[0] === undefined) {
             message.reply("Please provide a user.").catch(console.error);
             return;
         }
 
-        const user = args[0].replace(/[^0-9]/g, "");
+        let member = await utils.fetchMember(message, args[0]);
 
-        const result = await client.connection.query('SELECT `xp` FROM `' + tables.level + '` WHERE `user` = ?', [user]);
+        if (member === undefined) {
+            message.reply("User not found.").catch(console.error);
+            return;
+        }
+
+        const result = await client.connection.query('SELECT `xp` FROM `' + tables.level + '` WHERE `user` = ?', [member]);
 
         let xp;
 

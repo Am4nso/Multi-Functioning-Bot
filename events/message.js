@@ -1,5 +1,8 @@
 const {prefix} = require("../config.json");
 
+const userList = new Map();
+const interval = 1500;
+
 module.exports = {
     name: 'message',
     once: false,
@@ -9,7 +12,7 @@ module.exports = {
 
         if (message.content.startsWith(prefix)) {
             const args = message.content.split(" ");
-            const commandName = args.shift().replace(prefix, "");
+            const commandName = args.shift().replace(prefix, "").toLowerCase();
             try {
                 client.commands.get(commandName).execute(client, message, args);
             } catch (e) {
@@ -17,6 +20,23 @@ module.exports = {
             }
             return;
         }
+
+        if(userList.has(message.author.id)) {
+
+            const userData = userList.get(message.author.id);
+            const difference = message.createdTimestamp - userData.lastMessage.createdTimestamp;
+
+            if (difference < interval || userData.lastMessage.content === message.content) {
+                userList.set(message.author.id, {
+                    lastMessage: message
+                })
+                return;
+            }
+        }
+
+        userList.set(message.author.id, {
+            lastMessage : message
+        });
 
         const results = await client.connection.query('SELECT * FROM `levels` WHERE `user` = ?', [message.author.id]);
 
