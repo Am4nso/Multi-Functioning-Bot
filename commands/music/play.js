@@ -7,13 +7,8 @@ module.exports = {
     name: "play",
     async execute(client, message, args) {
 
-        if (client.players.hasOwnProperty(message.guild.id)) {
-            message.reply("I'm in another voice channel.").catch(console.error);
-            return;
-        }
-
-        if (args.length === 0) {
-            message.reply("Please provide a link to the audio. !play <url>");
+        if (using.has(message.author.id)) {
+            message.reply("Please wait before using this command.").catch(console.error);
             return;
         }
 
@@ -22,8 +17,13 @@ module.exports = {
             return;
         }
 
-        if (using.has(message.author.id)) {
-            message.reply("Please wait before using this command.").catch(console.error);
+        if (client.players.has(message.guild.id) && message.member.voice.channelID !== client.players.get(message.guild.id).connection.channel.id) {
+            message.reply("I'm in another voice channel.").catch(console.error);
+            return;
+        }
+
+        if (args.length === 0) {
+            message.reply("Please provide a link to the audio. !play <url>");
             return;
         }
 
@@ -53,9 +53,10 @@ module.exports = {
 
         message.member.voice.channel.join().catch(console.error).then(async connection => {
             client.players.set(message.guild.id, {connection: connection, queue: []});
-            await this.play(client.players, message, url);
             using.delete(message.author.id);
-            joining.edit({content: `${message.author}, Playing ` + url}).catch(console.error);
+            this.play(client.players, message, url).then(() => {
+                joining.edit({content: `${message.author}, Playing ` + url}).catch(console.error);
+            }).catch(console.error);
         });
     },
 
@@ -78,11 +79,11 @@ module.exports = {
 
             const next = doc.queue.shift();
 
+            await this.play(players, message, next);
+
             message.channel.send("Playing now " + next).catch(console.error);
 
             players.set(message.guild.id, doc);
-
-            await this.play(players, message, next);
 
         });
 

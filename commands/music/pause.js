@@ -1,6 +1,6 @@
 module.exports = {
     name: "pause",
-     execute(client, message, args) {
+     execute(client, message) {
         const doc = client.players.get(message.guild.id);
 
         if (doc === undefined) {

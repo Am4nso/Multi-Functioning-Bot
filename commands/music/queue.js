@@ -2,7 +2,7 @@ const {MessageEmbed} = require("discord.js");
 
 module.exports = {
     name: "queue",
-    async execute(client, message) {
+    execute(client, message) {
 
         if (!client.players.has(message.guild.id) || client.players.get(message.guild.id).queue.length === 0) {
             message.reply("The queue is empty!").catch(console.error);
